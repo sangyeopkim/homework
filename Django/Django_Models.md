@@ -277,7 +277,21 @@ class Car(models.Model):
 	#...
 ```
 이 때, 재귀적 관계(클래스 자체와 앨디다 관계가 있는 객체)로 선언할 수 도 있다. 재귀적 관계로 **ForeignKey** 필드를 선언할 때, 첫 번째 인자를 클래스가 아닌 **클래스명**으로 문자열을 전달해야 한다. 필드가 선언되는 시점에는 아직 클래스가 생성되지 않았기 때문이다. 클래스 대신 **클래스명**을 인자로 사용함으로써 클래스 선언 순서에 관계없이 참조가 가능해 진다.  
+
 ```
+class Employee(models.Model):
+	boss = models.ForeignKey('Employee')
+	#...
+```
+--
+
+```
+from django.db import models
+
+class Manufacturer(models.Model):
+	#...
+	pass
+	
 class Car(models.Model):
 	company_that_makes_it = models.ForeignKey(
 		Manufacturer,
@@ -285,4 +299,34 @@ class Car(models.Model):
 	)
 	#...
 ```
+* **ForeignKey** 필드의 이름은 **소문자로** 하는것을 권장한다.
+* `on_delete=models.CASCADE`  
+	* 계단식 삭제  
+	* Django는 **ON DELETE CASCADE SQL** 제약 조건의 동작을 에뮬레이션하고, **ForeignKey**가 포함 된 객체도 삭제한다.(???)  
 
+### Many-to-many relationships
+
+다대다 관계를 선언할때는 **ManyToManyField** 를 사용한다.  
+**ForeignKey** 필드와 마찬가지로, 관계를 가지는 모델 클래스를 첫 번째 인자로 받는다.  
+다대다 관계는 위치 인수가 필요하다.  
+
+> Ex) 피자에 여러 개의 토핑 객체가 있는경우 (토핑이 여러 피자에 있을 수 있으며, 각 피자에 여러 토핑이 있는 경우)   
+
+```
+from django.db import models
+
+class Topping(models.Model):
+	#...
+	pass
+	
+class Pizza(models.Model):
+	#...
+	toppings = models.ManyToManyField(Topping)
+```
+* **ManyToManyField** 의 필드 이름은 복수로 하는것을 추천한다.
+* **ManyToManyField** 는 관계를 가지는 두 모델 중 한쪽에만 선언하면 된다.
+* 일반적으로 **form** 에서 모델을 편집하기 때문에 편집하기 편한 모델에 선언하는것이 일반적이다. (피자에 토핑을 올리니까 피자 모델에 토핑을 추가)
+
+### Extra fields on many-to-many relationships(중간자 모델)
+
+때로는 피자와 토핑처럼 단순한 다대다 관계 처리 외에 두 모델 사이의 관게에 관한 데이터를 연결해야 하는 경우도 있다. 이 때 사용하는 것이 **중간자모델**이다.
