@@ -201,7 +201,8 @@ class Fruit(models.Model):
 >>> Fruit.objects.values_list('name', flat=True)
 ['Apple', 'Pear']
 ```
-`Apple` 만 있었는데, `Pear` 가 추가되고, 두 개 전부 출력 된 모습을 볼 수 있다.  
+기존의 모델 객체에 `primary_key` 필드 값을 변경하고 저장하는 경우, 기존 모델 객체의 `primary_key` 필드값이 바뀌는 것이 아니라, 새로운 모델 객체가 생긴다. 기존 모델객체는 DB 상에서 지워지지 않는다.  
+기존 'Apple' 객체에 'Pear' 객체가 추가된 것을 볼 수 있다.  
 
 --
 
@@ -216,6 +217,72 @@ Details..
 
 ## Automatic primary key fields
 
+기본적으로 **Django** 는 각 모델에 다음과 같은 **field** 를 제공한다.  
 
+```
+id = models.AutoField(primary_key=True)
+```
+이것은 자동으로 증가하는 `primary_key` 이다.  
+직접 `primary_key` 를 지정하려면, 모델의 필드 중 하나에 `primary_key=True` 라는 옵션을 줘야 한다.  
+`primary_key=True` 라는 명시적인 옵션이 있으면 Django 는 자동적으로 id 필드를 생성하지 않는다.  
+Django 의 모델은 필수적으로 (자동 or 수동) 하나의 `primary_key` 를 가져야 한다.  
 
+## Verbose field names
+
+읽기 좋은 형태의 필드 이름.  
+**ForeignKey**, **ManyToManyField**, **OneToOneField** 를 제외한 나머지 필드들은 공통적으로 첫 번째 인자(optional)로 **verbose name** 값을 받는다.  
+만약, **verbose name** 이 주어지지 않으면 Django 는 필드의 속성 이름을 **verbose name** 으로 사용한다. 이 때, Django 는 속성 이름에서 밑줄은 공백으로 변환하여 **verbose name** 으로 사용한다.  
+
+> Ex) **verbose name** 을 `person's first name` 으로 정해줬을 때    
+> (**verbose name** = `person's first name`)   
+
+```
+first_name = models.CharField("person's first name", max_length=30)
+```
+
+> Ex) **verbose name** 을 지정하지 않았을 때  
+> (**verbose name** = `first name`)
+
+```
+first_name = models.CharField(max_length=30)
+```
+
+**ForeignKey**, **ManyToManyField**, **OneToOneField** 는 첫 번째 인자로 모델 클래스를 받기 때문에, 해당 타입의 필드에 **verbose name** 을 지정하려면 아래와 같이 한다.  
+```
+poll = models.ForeignKey(Poll, verbose_name="the related poll")  
+site = models.ManyToManyField(Site, verbose_name="list of sites")   
+place = models.OneToOneField(Place, verbose_name="related place")  
+```
+**verbose name** 을 지정할 때 는 관습적으로 첫 글자를 대문자화 하지 않고 소문자로 지정한다. Django 가 필요한 경우 알아서 대문자화 하기 때문
+
+## Relationships
+
+관계형 데이터베이스의 가장 큰 장점은 테이블들을 서로 연결시키는 데 있다.  
+Django 는  대표적인 데이터베이스 관계 형태인 **many-to-one**(일대다), **many-to-many**(다대다), **one-to-one**(일대일) 3가지를 제공한다.   
+
+### Many-to-one relationships
+일대다 관계를 정의하려면 `django.db.models.ForeignKey` 클래스를 이용하여 필드를 선언하면 된다.  
+**ForeignKey** 필드를 선언하려면 관계를 맺을 모델 클래스를 인자로 넘겨주어야 한다.  
+> Ex) 제조업체가 여러 자동차를 생산하고, 각 자동차에는 하나의 제조업체가 있는 경우 (Manufacturer - Car 모델이 일대다 관계일 때)
+
+```
+from django.db import models
+
+class Manufacturer(models.Model):
+	#...
+	pass
+	
+class Car(models.Model):
+	manufacturer = models.ForeignKey(Manufacturer)
+	#...
+```
+이 때, 재귀적 관계(클래스 자체와 앨디다 관계가 있는 객체)로 선언할 수 도 있다. 재귀적 관계로 **ForeignKey** 필드를 선언할 때, 첫 번째 인자를 클래스가 아닌 **클래스명**으로 문자열을 전달해야 한다. 필드가 선언되는 시점에는 아직 클래스가 생성되지 않았기 때문이다. 클래스 대신 **클래스명**을 인자로 사용함으로써 클래스 선언 순서에 관계없이 참조가 가능해 진다.  
+```
+class Car(models.Model):
+	company_that_makes_it = models.ForeignKey(
+		Manufacturer,
+		on_delete=models.CASCADE,
+	)
+	#...
+```
 
