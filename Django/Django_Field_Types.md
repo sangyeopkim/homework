@@ -171,7 +171,7 @@ class MyModel(models.Model):
 		2. 모델에 **FileField** 또는 **ImageField**를 추가하고, 옵션을 정의하여 업로드 된 파일에 사용할 **MEDIA_ROOT**의 하위 디렉토리를 지정한다.
 		3. 데이터베이스에 저장되는 것은 모두 파일에 대한 경로이다. (**MEDIA_ROOT**에 상대적임) Django 가 제공하는 편리한 url 속성을 사용하고 싶을 것이다. 예를 들어 **ImageField** 의 이름이 **mug_shot**일 경우, **{{object.mug_shot.url}}** 템플릿을 사용하여 이미지의 절대 경로를 가져올 수 있다. 
 	
-	* ㄴ
+	* 
     
 
 
