@@ -9,7 +9,7 @@
 > 이를 통해 **Django** 는 자동으로 **DataBase**를 생성하고, 접근이 가능하다.  
 
 ### Example
-```
+```python
 from django.db import models
 
 class Person(models.Model):
